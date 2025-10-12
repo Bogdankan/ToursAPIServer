@@ -1,5 +1,4 @@
 using ToursAPI.DTOs;
-using ToursAPI.Models;
 
 namespace ToursAPI.Services;
 

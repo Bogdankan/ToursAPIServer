@@ -147,3 +147,4 @@ E:\Diploma\Server\Demo\ToursAPI\ToursAPI\obj\Debug\net8.0\ref\ToursAPI.dll
 E:\Diploma\Server\Demo\ToursAPI\ToursAPI\bin\Debug\net8.0\Npgsql.dll
 E:\Diploma\Server\Demo\ToursAPI\ToursAPI\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 E:\Diploma\Server\Demo\ToursAPI\ToursAPI\bin\Debug\net8.0\AutoMapper.dll
+E:\Diploma\Server\Demo\ToursAPI\ToursAPI\obj\Debug\net8.0\ToursAPI.sourcelink.json

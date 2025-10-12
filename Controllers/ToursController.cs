@@ -1,7 +1,7 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToursAPI.DTOs;
-using ToursAPI.Models;
 using ToursAPI.Services;
 
 namespace ToursAPI.Controllers;
@@ -34,7 +34,16 @@ public class ToursController : ControllerBase
         return Ok(tour);
     }
     
+    [HttpGet("{id}/resources")]
+    public async Task<IActionResult> GetResourcesById(Guid id)
+    {
+        var res = await _tourService.GetResourcesAsync(id);
+        if (res is null) return NotFound();
+        return File(res.Stream, res.ContentType, res.FileName, enableRangeProcessing: true);
+    }
+    
     [HttpPost]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Create([FromBody] TourCreateDto dto)
     {
         var companyExists = await _companyService.ExistsAsync(dto.CompanyId);
@@ -46,6 +55,7 @@ public class ToursController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Update(Guid id, [FromBody] TourUpdateDto dto)
     {
         var updated = await _tourService.UpdateAsync(id, dto);
@@ -54,6 +64,7 @@ public class ToursController : ControllerBase
     }
     
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleted = await _tourService.DeleteAsync(id);

@@ -21,13 +21,13 @@ public class IndustryService :  IIndustryService
 
     public async Task<IEnumerable<IndustryDto>> GetAllAsync()
     {
-        var industries = await _context.Industries.ToListAsync();
+        var industries = await _context.Industries.Include(i => i.Companies).ToListAsync();
         return _mapper.Map<IEnumerable<IndustryDto>>(industries);
     }
 
     public async Task<IndustryDto?> GetByIdAsync(Guid id)
     {
-        var industry = await _context.Industries.FindAsync(id);
+        var industry = await _context.Industries.Include(i => i.Companies).SingleOrDefaultAsync(i => i.Id == id);
         return industry == null ? null : _mapper.Map<IndustryDto>(industry);
     }
 

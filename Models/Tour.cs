@@ -11,6 +11,8 @@ public class Tour
     public required string Resources { get; set; }
     public Guid CompanyId { get; set; }
     public Company Company { get; set; }
+    //public ICollection<TourVisit> TourVisits { get; set; } = new List<TourVisit>();
+    public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }
 
 public class TourConfiguration : IEntityTypeConfiguration<Tour>

@@ -11,4 +11,6 @@ public class AppDBContext : IdentityDbContext<User>
     public DbSet<Tour> Tours => Set<Tour>();
     public DbSet<Industry> Industries => Set<Industry>();
     public DbSet<Company> Companies => Set<Company>();
+    public DbSet<Feedback> Feedbacks => Set<Feedback>();
+    public DbSet<TourVisit> TourVisits => Set<TourVisit>();
 }

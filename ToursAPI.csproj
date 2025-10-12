@@ -22,7 +22,6 @@
 
     <ItemGroup>
       <Folder Include="Data\Migrations\" />
-      <Folder Include="Helpers\" />
       <Folder Include="Logic\" />
       <Folder Include="Repositories\" />
     </ItemGroup>

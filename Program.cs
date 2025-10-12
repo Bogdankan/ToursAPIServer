@@ -12,19 +12,28 @@ using ToursAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// ===== DB =====
 builder.Services.AddDbContext<AppDBContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ===== Identity =====
 builder.Services.AddIdentity<User, IdentityRole>()
-    .AddEntityFrameworkStores<AppDBContext>();
+    .AddEntityFrameworkStores<AppDBContext>()
+    .AddDefaultTokenProviders();
 
+// ===== AutoMapper =====
 builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
 
+// ===== Services =====
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IIndustryService, IndustryService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<ITourVisitService, TourVisitService>();
 
+builder.Services.AddAuthorization();
+
+// ===== JWT Auth =====
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -36,13 +45,33 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            // Використовуємо стандартний ClaimTypes.Role
             RoleClaimType = ClaimTypes.Role
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"JWT помилка: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine($"JWT валідний. Користувач: {context.Principal.Identity.Name}");
+                return Task.CompletedTask;
+            },
+            OnMessageReceived = context =>
+            {
+                Console.WriteLine($"JWT отриманий: {context.Token}");
+                return Task.CompletedTask;
+            }
         };
     });
 
-builder.Services.AddAuthorization();
 
 
+// ===== Controllers & Swagger =====
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -50,9 +79,11 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Введіть JWT токен з Bearer",
+        Description = "Введіть JWT токен у форматі: Bearer {token}",
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
@@ -65,43 +96,40 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseAuthentication();
-app.UseAuthorization();
-app.MapControllers();
-
-using (var scope = app.Services.CreateScope())
+// ===== Swagger =====
+if (app.Environment.IsDevelopment())
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var roles = new[] { "Admin", "User" };
-
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-            await roleManager.CreateAsync(new IdentityRole(role));
-    }
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
+app.UseHttpsRedirection();
+
+app.UseAuthentication(); // Обов’язково перед UseAuthorization
+app.UseAuthorization();
+
+app.MapControllers();
+
+// ===== Role seeding =====
 using (var scope = app.Services.CreateScope())
 {
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
     string[] roles = { "Admin", "User" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
             await roleManager.CreateAsync(new IdentityRole(role));
     }
-    
+
     string adminEmail = "admin@tourapp.com";
     string adminPassword = "Admin123$";
 
@@ -119,7 +147,5 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 }
-
-
 
 app.Run();

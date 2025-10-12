@@ -7,6 +7,8 @@ namespace ToursAPI.Models;
 public class User : IdentityUser
 {
     public required string FullName { get; set; }
+    
+    public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }
 
 public class UserConfiguration : IEntityTypeConfiguration<User>

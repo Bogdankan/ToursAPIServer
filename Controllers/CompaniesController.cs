@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToursAPI.DTOs;
@@ -33,6 +34,7 @@ public class CompaniesController : ControllerBase
     }
     
     [HttpPost]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Create([FromBody] CompanyCreateDto dto)
     {
         var created = await _companyService.CreateAsync(dto);
@@ -40,6 +42,7 @@ public class CompaniesController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Update(Guid id, [FromBody] CompanyUpdateDto dto)
     {
         var updated = await _companyService.UpdateAsync(id, dto);
@@ -48,6 +51,7 @@ public class CompaniesController : ControllerBase
     }
     
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var deleted = await _companyService.DeleteAsync(id);

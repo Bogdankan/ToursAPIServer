@@ -181,6 +181,38 @@ namespace ToursAPI.Data.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("ToursAPI.Models.Feedback", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Rate")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TourId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Feedbacks");
+                });
+
             modelBuilder.Entity("ToursAPI.Models.Industry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -222,6 +254,34 @@ namespace ToursAPI.Data.Migrations
                     b.HasIndex("CompanyId");
 
                     b.ToTable("Tours");
+                });
+
+            modelBuilder.Entity("ToursAPI.Models.TourVisit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("interval");
+
+                    b.Property<Guid>("TourId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("VisitDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TourId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TourVisits");
                 });
 
             modelBuilder.Entity("ToursAPI.Models.User", b =>
@@ -354,6 +414,25 @@ namespace ToursAPI.Data.Migrations
                     b.Navigation("Industry");
                 });
 
+            modelBuilder.Entity("ToursAPI.Models.Feedback", b =>
+                {
+                    b.HasOne("ToursAPI.Models.Tour", "Tour")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ToursAPI.Models.User", "User")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ToursAPI.Models.Tour", b =>
                 {
                     b.HasOne("ToursAPI.Models.Company", "Company")
@@ -365,6 +444,25 @@ namespace ToursAPI.Data.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("ToursAPI.Models.TourVisit", b =>
+                {
+                    b.HasOne("ToursAPI.Models.Tour", "Tour")
+                        .WithMany()
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ToursAPI.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ToursAPI.Models.Company", b =>
                 {
                     b.Navigation("Tours");
@@ -373,6 +471,16 @@ namespace ToursAPI.Data.Migrations
             modelBuilder.Entity("ToursAPI.Models.Industry", b =>
                 {
                     b.Navigation("Companies");
+                });
+
+            modelBuilder.Entity("ToursAPI.Models.Tour", b =>
+                {
+                    b.Navigation("Feedbacks");
+                });
+
+            modelBuilder.Entity("ToursAPI.Models.User", b =>
+                {
+                    b.Navigation("Feedbacks");
                 });
 #pragma warning restore 612, 618
         }

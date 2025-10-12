@@ -41,5 +41,33 @@ public class MappingProfile : Profile
 
         CreateMap<TourCreateDto, Tour>();
         CreateMap<TourUpdateDto, Tour>();
+        
+        // Feedback -> FeedbackDto
+        CreateMap<Feedback, FeedbackDto>()
+            .ForMember(
+                dest => dest.Username,
+                opt => opt.MapFrom(src => src.User.FullName)
+            )
+            .ForMember(
+                dest => dest.TourTitle,
+                opt => opt.MapFrom(src => src.Tour.Title)
+            );
+        
+        CreateMap<FeedbackCreateDto, Feedback>();
+        CreateMap<FeedbackUpdateDto, Feedback>();
+        
+        // TourVisit ->TourVisitDto
+        CreateMap<TourVisit, TourVisitDto>()
+            .ForMember(
+                dest => dest.Username,
+                opt => opt.MapFrom(src => src.User.FullName)
+            )
+            .ForMember(
+                dest => dest.TourTitle,
+                opt => opt.MapFrom(src => src.Tour.Title)
+            );
+        
+        CreateMap<TourVisitCreateDto, TourVisit>();
+        CreateMap<TourVisitUpdateDto, TourVisit>();
     }
 }

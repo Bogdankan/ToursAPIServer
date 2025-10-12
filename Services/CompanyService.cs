@@ -19,13 +19,13 @@ public class CompanyService : ICompanyService
     }
     public async Task<IEnumerable<CompanyDto>> GetAllAsync()
     {
-        var companies = await _context.Companies.ToListAsync();
+        var companies = await _context.Companies.Include(c => c.Industry).Include(c => c.Tours).ToListAsync();
         return _mapper.Map<IEnumerable<CompanyDto>>(companies);
     }
 
     public async Task<CompanyDto?> GetByIdAsync(Guid id)
     {
-        var company = await _context.Companies.FindAsync(id);
+        var company = await _context.Companies.Include(c => c.Industry).Include(c => c.Tours).SingleOrDefaultAsync(c => c.Id == id);
         return company == null ? null : _mapper.Map<CompanyDto>(company);
     }
 
