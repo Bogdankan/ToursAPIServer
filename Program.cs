@@ -30,6 +30,7 @@ builder.Services.AddScoped<IIndustryService, IndustryService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ITourVisitService, TourVisitService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddAuthorization();
 

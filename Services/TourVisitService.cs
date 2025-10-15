@@ -48,9 +48,10 @@ public class TourVisitService : ITourVisitService
         return tourVisit == null ? null : _mapper.Map<TourVisitDto>(tourVisit);
     }
 
-    public async Task<TourVisitDto> CreateAsync(TourVisitCreateDto dto)
+    public async Task<TourVisitDto?> CreateAsync(TourVisitCreateDto dto)
     {
         var entity = _mapper.Map<TourVisit>(dto);
+        if(_context.TourVisits.Any(f => f.TourId == dto.TourId) && _context.TourVisits.Any(f => f.UserId == dto.UserId)) return null;
         entity.VisitDate = DateTime.UtcNow;
         _context.TourVisits.Add(entity);
         await _context.SaveChangesAsync();

@@ -69,5 +69,8 @@ public class MappingProfile : Profile
         
         CreateMap<TourVisitCreateDto, TourVisit>();
         CreateMap<TourVisitUpdateDto, TourVisit>();
+        
+        // User ->UserDto
+        CreateMap<User, UserDto>();
     }
 }

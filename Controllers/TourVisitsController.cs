@@ -41,6 +41,7 @@ public class TourVisitsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] TourVisitCreateDto dto)
     {
         var created = await _tourVisitService.CreateAsync(dto);
+        if (created == null) return Conflict(new { message = "TourVisit must be distinct." });
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
     
