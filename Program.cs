@@ -9,9 +9,12 @@ using Microsoft.OpenApi.Models;
 using ToursAPI.Mappings;
 using ToursAPI.Models;
 using ToursAPI.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
-
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 // ===== DB =====
 builder.Services.AddDbContext<AppDBContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -46,7 +49,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
-            // Використовуємо стандартний ClaimTypes.Role
+            
             RoleClaimType = ClaimTypes.Role
         };
 
@@ -70,6 +73,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy("Default", p => p
+        .AllowAnyOrigin()   
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+// ...
 
 
 // ===== Controllers & Swagger =====
@@ -104,16 +115,25 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 // ===== Swagger =====
-if (app.Environment.IsDevelopment())
+/*if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+}*/
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
+app.UseCors("Default");
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Обов’язково перед UseAuthorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

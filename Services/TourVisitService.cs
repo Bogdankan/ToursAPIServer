@@ -50,29 +50,88 @@ public class TourVisitService : ITourVisitService
 
     public async Task<TourVisitDto?> CreateAsync(TourVisitCreateDto dto)
     {
+        var now = DateTime.UtcNow;
+
+        // 1) шукаємо існуючий запис
+        var existing = await _context.TourVisits
+            .FirstOrDefaultAsync(tv => tv.UserId == dto.UserId && tv.TourId == dto.TourId);
+
+        if (existing != null)
+        {
+            // 2) оновлюємо дату візиту й повертаємо
+            existing.VisitDate = now;
+            await _context.SaveChangesAsync();
+
+            return await _context.TourVisits
+                .AsNoTracking()
+                .Where(tv => tv.Id == existing.Id)
+                .ProjectTo<TourVisitDto>(_mapper.ConfigurationProvider)
+                .SingleAsync();
+        }
+
+        // 3) створюємо новий
         var entity = _mapper.Map<TourVisit>(dto);
-        if(_context.TourVisits.Any(f => f.TourId == dto.TourId) && _context.TourVisits.Any(f => f.UserId == dto.UserId)) return null;
-        entity.VisitDate = DateTime.UtcNow;
+        entity.VisitDate = now;
         _context.TourVisits.Add(entity);
-        await _context.SaveChangesAsync();
-        return await _context.TourVisits
-            .AsNoTracking()
-            .Where(tv => tv.Id == entity.Id)
-            .ProjectTo<TourVisitDto>(_mapper.ConfigurationProvider)
-            .SingleAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+
+            return await _context.TourVisits
+                .AsNoTracking()
+                .Where(tv => tv.Id == entity.Id)
+                .ProjectTo<TourVisitDto>(_mapper.ConfigurationProvider)
+                .SingleAsync();
+        }
+        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+        {
+            // 4) гонка: хтось створив одночасно → оновлюємо VisitDate вже існуючого і повертаємо його
+            var winner = await _context.TourVisits
+                .FirstOrDefaultAsync(tv => tv.UserId == dto.UserId && tv.TourId == dto.TourId);
+
+            if (winner == null) return null; // малоймовірно, але захист
+
+            winner.VisitDate = now;
+            await _context.SaveChangesAsync();
+
+            return await _context.TourVisits
+                .AsNoTracking()
+                .Where(tv => tv.Id == winner.Id)
+                .ProjectTo<TourVisitDto>(_mapper.ConfigurationProvider)
+                .SingleAsync();
+        }
     }
+
 
     public async Task<TourVisitDto?> UpdateAsync(Guid id, TourVisitUpdateDto dto)
     {
         var tourVisit = await _context.TourVisits.FindAsync(id);
         if (tourVisit == null) return null;
         
+        var now = DateTime.UtcNow;
+        
         _mapper.Map(dto, tourVisit);
+        var duration = now - tourVisit.VisitDate;
+        
+        duration = new TimeSpan(duration.Hours, duration.Minutes, duration.Seconds);
+        
+        tourVisit.Duration = duration;
+        
         await _context.SaveChangesAsync();
         return await _context.TourVisits
             .AsNoTracking()
             .Where(f => f.Id == tourVisit.Id)
             .ProjectTo<TourVisitDto>(_mapper.ConfigurationProvider)
             .SingleAsync();
+    }
+    
+    private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+    {
+        // PostgreSQL: 23505 = unique_violation
+        if (ex.InnerException is Npgsql.PostgresException pg && pg.SqlState == "23505")
+            return true;
+
+        return false;
     }
 }

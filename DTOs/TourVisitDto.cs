@@ -13,12 +13,9 @@ public class TourVisitCreateDto
 {
     public string UserId { get; set; }
     public Guid TourId { get; set; }
-    public DateTime VisitDate { get; set; }
 }
 
 public class TourVisitUpdateDto
 {
-    public string UserId { get; set; }
-    public Guid TourId { get; set; }
     public TimeSpan Duration { get; set; }
 }

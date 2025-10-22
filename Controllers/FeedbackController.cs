@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToursAPI.DTOs;
 using ToursAPI.Services;
@@ -6,6 +8,7 @@ namespace ToursAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class FeedbackController : ControllerBase
 {
     private readonly IFeedbackService _feedbackService;

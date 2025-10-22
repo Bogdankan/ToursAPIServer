@@ -71,6 +71,8 @@ public class MappingProfile : Profile
         CreateMap<TourVisitUpdateDto, TourVisit>();
         
         // User ->UserDto
-        CreateMap<User, UserDto>();
+        CreateMap<User, UserDto>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+            .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName));;
     }
 }
