@@ -25,7 +25,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
     .AddDefaultTokenProviders();
 
 // ===== AutoMapper =====
-builder.Services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // ===== Services =====
 builder.Services.AddScoped<ITourService, TourService>();
